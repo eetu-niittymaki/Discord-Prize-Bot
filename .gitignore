@@ -1,0 +1,6 @@
+.env
+/node_modules
+prizes.txt
+prizesCopy.txt
+winners.txt
+winnersCopy.txt
