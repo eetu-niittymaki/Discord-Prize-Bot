@@ -4,3 +4,6 @@ prizes.txt
 prizesCopy.txt
 winners.txt
 winnersCopy.txt
+hasEntered.txt
+credentials.json
+rest.http

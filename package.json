@@ -2,14 +2,23 @@
   "name": "temp",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "gdriveServer.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "nodemon gdriveServer.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node gdriveServer.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.23.0",
     "discord.js": "^12.5.1",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "googleapis": "^89.0.0",
+    "readline-sync": "^1.4.10"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.14"
   }
 }

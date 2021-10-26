@@ -1,15 +1,20 @@
 const Discord = require("discord.js")
 const dotenv = require("dotenv")
 const fs = require("fs")
+const gdrive = require('./gdriveServer.js')
+const axios = require('axios')
 const client = new Discord.Client()
 
 dotenv.config()
 
+let alreadyEntered = []
+
 client.once("ready", () => {
     console.log("ready!")
+    let hasEntered = fs.readFileSync("hasEntered.txt", "utf-8")
+    let enteredByLine = hasEntered.split("\n")
+    alreadyEntered.push(enteredByLine)
 })
-
-let alreadyEntered = []
 
 const getRandom = (array) => {
     return array[~~((array.length -1) * Math.random())]
@@ -29,6 +34,7 @@ const start = (message) => {
         let randItem = randomItem(textByLine)
         message.channel.send(`${message.author} palkintosi on: ${randItem}, toimitamme palkintosi yksityisviestillä.`)
         fs.writeFileSync("winners.txt", (message.author.username + ": " + `${randItem}\n`), {flag: "a+"})
+        fs.writeFileSync("hasEntered.txt", (message.author) + "\n", {flag: "a+"})
         let remove = text.replace(`${randItem}\n`, "")
         fs.writeFileSync("prizes.txt", remove )
     }
@@ -44,7 +50,7 @@ client.on("message", message => {
 */
 
 client.on("message", message => {
-    if (message.content === "!arpa" && (message.channel.name === 'arpajaiset' || message.channel.name === 'test')) {
+    if (message.content === "!arpa" && (message.channel.name === 'arpajaiset' || message.channel.name === 'test' || message.channel.name === 'botti')) {
         if (alreadyEntered.includes(message.author)) { // Limits participant entry to one time only
             message.channel.send(`Olit jo mukana arvonnassa ${message.author}.`)
         } else {
