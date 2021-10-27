@@ -1,45 +1,45 @@
 const { google } = require('googleapis')
-const express = require('express')
+//const express = require('express')
 const dotenv = require("dotenv")
-const app = express()
-app.use(express.json())
-const credentials = require('./credentials.json')
+//const app = express()
+//app.use(express.json())
 
 dotenv.config()
 
-const PORT = 3000
+//const PORT = 3000
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+//app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 
+// Sheet IDs
 const prizes = process.env.PRIZES
 const winners = process.env.WINNERS
-const hasEntered = process.env.HAS_ENTERED
+const hasEnteredId = process.env.HAS_ENTERED
 
+let index = 0
+
+// Random number generator
 const getRandom = (array) => {
   return array[~~((array.length -1) * Math.random())]
 } 
 
-const randomItem = (textByLine) => {
-  return getRandom(textByLine)
-}
-
+// Authenticates connection to Google Sheets
 const authentication = async () => {
-    const auth = new google.auth.GoogleAuth({
-        keyFile: 'credentials.json',
-        scopes: [ "https://www.googleapis.com/auth/spreadsheets", 
-                  "https://www.googleapis.com/auth/drive" ]
-    })
+  const auth = new google.auth.GoogleAuth({
+      keyFile: 'credentials.json',
+      scopes: [ "https://www.googleapis.com/auth/spreadsheets", 
+                "https://www.googleapis.com/auth/drive" ]
+  })
 
-    const client = await auth.getClient()
-    const sheets = google.sheets({
-        version: 'v4',
-        auth: client
-    })
-    return { sheets }
+  const client = await auth.getClient()
+  const sheets = google.sheets({
+      version: 'v4',
+      auth: client
+  })
+  return { sheets }
 }
 
 // Read prizes from spreadsheet
-app.get('/prizes', async (req, res) => {
+const getPrize = async () => {
   try {
     const { sheets } = await authentication()
 
@@ -47,22 +47,77 @@ app.get('/prizes', async (req, res) => {
       spreadsheetId: prizes,
       range: 'Taulukko1'
     })
-    //console.log(response.data.values)
-    const randomPrize = randomItem(response.data.values)
-    // console.log(randomPrize)
+    const randomPrize = await getRandom(response.data.values)
     for (let i = 0; i < response.data.values.length; i++) { // Loop through response to find prize index
       if (response.data.values[i] === randomPrize) {
         console.log(randomPrize, i)
-        deletePrize(i)
-        break
+        index = i
+        console.log("Palkinto gdriveServer: ", randomPrize)
       }
     }
+    return randomPrize
   } catch(e) {
     console.log(e)
-    res.status(500).send()
   }
-})
+}
 
+// Post winner and prize to google sheet
+const postWinner = async (winner, prize) => {
+  try {
+    const { sheets } = await authentication()
+    let values = [
+      [winner, prize.toString()]
+    ]
+    let resource = {
+      values
+    }
+  //const { winner, prize } = req.body // Decontructs http request
+    console.log("postWinner :", resource)
+
+    const writeReq = await sheets.spreadsheets.values.append({
+      spreadsheetId: winners,
+      range: 'Taulukko1',
+      valueInputOption: 'USER_ENTERED',
+      insertDataOption: 'INSERT_ROWS',
+      resource 
+    })
+    if (writeReq.status === 200) {
+      //return res.json({ msg: "Success"})
+      deletePrize()
+    }
+  } catch(e) {
+    console.log("Error updating sheet", e)
+  }
+}
+
+// Delete prize with given index
+const deletePrize = async () => {
+  try {
+    const { sheets } = await authentication()
+
+    const deletePrize = await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: prizes,
+      resource: {
+        "requests": [
+          {
+            "deleteRange": {
+              "range": {
+                "startRowIndex": index,
+                "endRowIndex": index + 1,
+              },
+              "shiftDimension": "ROWS"
+            }
+          }
+        ]
+      }
+    })
+    console.log("Deleted prize with index", index)
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+/*
 // Read winners from spreadsheet
 app.get('/winners', async (req, res) => {
   try {
@@ -79,79 +134,46 @@ app.get('/winners', async (req, res) => {
     res.status(500).send()
   }
 })
-
+*/
 // Read persons who have already entered raffle
-app.get('/has-entered', async (req, res) => {
+const getHasEntered = async () => {
   try {
     const { sheets } = await authentication()
 
     const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: hasEntered,
+      spreadsheetId: hasEnteredId,
       range: 'Taulukko1'
     })
-      // arr.push(response.data.values.toString())
-    console.log(response.data.values)
+    return response.data.values
   } catch(e) {
     console.log(e)
-    res.status(500).send()
   }
-})
+}
 
-
-// Post winner and prize to google sheet
-app.post('/winners', async (req, res) => {
+// Add raffle entrant to Google Sheet
+const postHasEntered = async (hasEnteredIn) => {
   try {
-    const { winner, prize } = req.body // Decontructs http request
     const { sheets } = await authentication()
+    const { enterWinner } = hasEnteredIn
 
     const writeReq = await sheets.spreadsheets.values.append({
-      spreadsheetId: winners,
+      spreadsheetId: hasEnteredId,
       range: 'Taulukko1',
       valueInputOption: 'USER_ENTERED',
       insertDataOption: 'INSERT_ROWS',
       resource: {
         values: [
-            [winner, prize],
+            [enterWinner],
         ] 
       }  
     })
-
     if (writeReq.status === 200) {
-      return res.json({ msg: "Success"})
+      console.log("Added entrant to sheet")
     }
-    return res.json({ msg: "Something went wrong"})
   } catch(e) {
     console.log("Error updating sheet", e)
-    res.status(500).send()
-  }
-})
-// Delete prize with given index
-const deletePrize = async (i) => {
-  try {
-    const { sheets } = await authentication()
-
-    const deletePrize = await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: prizes,
-      resource: {
-        "requests": [
-          {
-            "deleteRange": {
-              "range": {
-                "startRowIndex": i,
-                "endRowIndex": i + 1,
-              },
-              "shiftDimension": "ROWS"
-            }
-          }
-        ]
-      }
-    })
-    console.log("Deleted prize with index", i)
-  } catch (e) {
-    res.status(500).send()
   }
 }
-
 
 // prints all files and folders service account has access to
 /*
@@ -167,3 +189,5 @@ drive.files.list({}, (err, res) => {
     }
   })
 */
+
+module.exports = { getPrize, getHasEntered, postHasEntered, postWinner}

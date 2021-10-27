@@ -2,11 +2,11 @@
   "name": "temp",
   "version": "1.0.0",
   "description": "",
-  "main": "gdriveServer.js",
+  "main": "index.js",
   "scripts": {
-    "server": "nodemon gdriveServer.js",
+    "server": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node gdriveServer.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
