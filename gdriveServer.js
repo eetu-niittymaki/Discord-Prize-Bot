@@ -71,9 +71,6 @@ const postWinner = async (winner, prize) => {
     let resource = {
       values
     }
-  //const { winner, prize } = req.body // Decontructs http request
-    console.log("postWinner :", resource)
-
     const writeReq = await sheets.spreadsheets.values.append({
       spreadsheetId: winners,
       range: 'Taulukko1',
@@ -82,7 +79,6 @@ const postWinner = async (winner, prize) => {
       resource 
     })
     if (writeReq.status === 200) {
-      //return res.json({ msg: "Success"})
       deletePrize()
     }
   } catch(e) {
@@ -117,24 +113,6 @@ const deletePrize = async () => {
   }
 }
 
-/*
-// Read winners from spreadsheet
-app.get('/winners', async (req, res) => {
-  try {
-    const { sheets } = await authentication()
-
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: winners,
-      range: 'Taulukko1'
-    })
-      // arr.push(response.data.values.toString())
-    console.log(response.data.values)
-  } catch(e) {
-    console.log(e)
-    res.status(500).send()
-  }
-})
-*/
 // Read persons who have already entered raffle
 const getHasEntered = async () => {
   try {
@@ -151,10 +129,9 @@ const getHasEntered = async () => {
 }
 
 // Add raffle entrant to Google Sheet
-const postHasEntered = async (hasEnteredIn) => {
+const postHasEntered = async (enterWinner) => {
   try {
     const { sheets } = await authentication()
-    const { enterWinner } = hasEnteredIn
 
     const writeReq = await sheets.spreadsheets.values.append({
       spreadsheetId: hasEnteredId,
@@ -168,7 +145,7 @@ const postHasEntered = async (hasEnteredIn) => {
       }  
     })
     if (writeReq.status === 200) {
-      console.log("Added entrant to sheet")
+      console.log(`Added ${enterWinner} to sheet`)
     }
   } catch(e) {
     console.log("Error updating sheet", e)

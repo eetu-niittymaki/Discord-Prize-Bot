@@ -9,9 +9,11 @@ dotenv.config()
 
 let alreadyEntered = []
 
-client.once("ready", () => {
+client.once("ready", async () => {
     console.log("ready!")
-    alreadyEntered.push(gdrive.getHasEntered())
+    const getEntrants = await gdrive.getHasEntered()
+    alreadyEntered.push(getEntrants)
+    console.log(getEntrants)
 })
 
 const start = async (message) => {
@@ -41,14 +43,16 @@ client.on("message", message => {
 })
 */
 
-client.on("message", message => {
+client.on("message", async (message) => {
     if (message.content === "!arpa" && (message.channel.name === 'arpajaiset' || message.channel.name === 'test' || message.channel.name === 'botti')) {
-        if (alreadyEntered.includes(message.author)) { // Limits participant entry to one time only
-            message.channel.send(`Olit jo mukana arvonnassa ${message.author}.`)
-        } else {
+        alreadyEntered = JSON.stringify(alreadyEntered)
+        const checkArray = alreadyEntered.indexOf(message.author.id)
+        if (checkArray !== -1) { // Limits participant entry to one time only
             start(message)
-        //    alreadyEntered.push(message.author) LAITA TAKAS PÄÄLLE!
-            gdrive.postHasEntered(message.author)
+            //alreadyEntered.push(message.author) LAITA TAKAS PÄÄLLE!
+            await gdrive.postHasEntered(message.author.id)  
+        } else {
+            message.channel.send(`Olit jo mukana arvonnassa ${message.author}.`)
         }
     }
 })
