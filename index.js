@@ -11,7 +11,7 @@ let alreadyEntered = []
 
 client.once("ready", async () => {
     console.log("Ready!")
-    let text = fs.readFileSync("hasEntered.txt", 'utf-8')
+    let text = fs.readFileSync("hasEntered.txt").toString('utf-8')
     let textByLine = text.split("\n")
     //const getEntrants = await gdrive.getHasEntered()
     alreadyEntered.push(textByLine)
@@ -46,10 +46,10 @@ client.on("message", message => {
 
 client.on("message", async (message) => {
     if (message.content === "!arpa" && (message.channel.name === 'arpajaiset' || message.channel.name === 'test' || message.channel.name === 'botti')) {
-        if (!(alreadyEntered.contains(message.author.toString()))) { // Limits participant entry to one time only
+        if (!(alreadyEntered.includes(message.author))) { // Limits participant entry to one time only
             start(message)
             //alreadyEntered.push(message.author) LAITA PÄÄLLE!
-            fs.writeFileSync("hasEntered.txt", (message.author.toString() + "\n"), {flag: "a+"})
+            fs.writeFileSync("hasEntered.txt", (message.author + "\n"), {flag: "a+"})
             //await gdrive.postHasEntered(message.author.id)  
         } else {
             message.channel.send(`Olit jo mukana arvonnassa ${message.author}.`)

@@ -52,7 +52,6 @@ const getPrize = async () => {
       if (response.data.values[i] === randomPrize) {
         console.log(randomPrize, i)
         index = i
-        console.log("Palkinto gdriveServer: ", randomPrize)
       }
     }
     return randomPrize
@@ -122,6 +121,7 @@ const getHasEntered = async () => {
       spreadsheetId: hasEnteredId,
       range: 'Taulukko1'
     })
+    console.log(typeof response.data.values)
     return response.data.values
   } catch(e) {
     console.log(e)
