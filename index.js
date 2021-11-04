@@ -10,10 +10,12 @@ dotenv.config()
 let alreadyEntered = []
 
 client.once("ready", async () => {
-    console.log("ready!")
-    const getEntrants = await gdrive.getHasEntered()
-    alreadyEntered.push(getEntrants)
-    console.log(getEntrants)
+    console.log("Ready!")
+    let text = fs.readFileSync("hasEntered.txt", 'utf-8')
+    let textByLine = text.split("\n")
+    //const getEntrants = await gdrive.getHasEntered()
+    alreadyEntered.push(textByLine)
+    console.log(alreadyEntered)
 })
 
 const start = async (message) => {
@@ -24,7 +26,6 @@ const start = async (message) => {
       //  return
     //} else {
         let randItem = await gdrive.getPrize()
-        console.log("PALKINTO: ", randItem)
         message.channel.send(`${message.author} palkintosi on: ${randItem}, toimitamme palkintosi yksityisviestillä.`)
         //fs.writeFileSync("winners.txt", (message.author.username + ": " + `${randItem}\n`), {flag: "a+"})
         //fs.writeFileSync("hasEntered.txt", (message.author) + "\n", {flag: "a+"})
@@ -45,12 +46,11 @@ client.on("message", message => {
 
 client.on("message", async (message) => {
     if (message.content === "!arpa" && (message.channel.name === 'arpajaiset' || message.channel.name === 'test' || message.channel.name === 'botti')) {
-        alreadyEntered = JSON.stringify(alreadyEntered)
-        const checkArray = alreadyEntered.indexOf(message.author.id)
-        if (checkArray !== -1) { // Limits participant entry to one time only
+        if (!(alreadyEntered.contains(message.author.toString()))) { // Limits participant entry to one time only
             start(message)
-            //alreadyEntered.push(message.author) LAITA TAKAS PÄÄLLE!
-            await gdrive.postHasEntered(message.author.id)  
+            //alreadyEntered.push(message.author) LAITA PÄÄLLE!
+            fs.writeFileSync("hasEntered.txt", (message.author.toString() + "\n"), {flag: "a+"})
+            //await gdrive.postHasEntered(message.author.id)  
         } else {
             message.channel.send(`Olit jo mukana arvonnassa ${message.author}.`)
         }
