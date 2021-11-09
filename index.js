@@ -26,9 +26,12 @@ const start = async (message) => {
       //  return
     //} else {
         let randItem = await gdrive.getPrize()
+        if (message.author.name === "simapoika")  {
+            message.channel.send(`${message.author} mitä vittua? kukaaa?? hähh? ole hyvä: ${randItem} `)
+        }
         message.channel.send(`${message.author} palkintosi on: ${randItem}, toimitamme palkintosi yksityisviestillä.`)
         //fs.writeFileSync("winners.txt", (message.author.username + ": " + `${randItem}\n`), {flag: "a+"})
-        //fs.writeFileSync("hasEntered.txt", (message.author) + "\n", {flag: "a+"})
+        fs.writeFileSync("hasEntered.txt", (message.author) + "\n", {flag: "a+"})
         //let remove = text.replace(`${randItem}\n`, "")
         //fs.writeFileSync("prizes.txt", remove )
         await gdrive.postWinner(message.author.username, randItem)
@@ -48,7 +51,7 @@ client.on("message", async (message) => {
     if (message.content === "!arpa" && (message.channel.name === 'arpajaiset' || message.channel.name === 'test' || message.channel.name === 'botti')) {
         if (!(alreadyEntered.includes(message.author))) { // Limits participant entry to one time only
             start(message)
-            //alreadyEntered.push(message.author) LAITA PÄÄLLE!
+            alreadyEntered.push(message.author) 
             fs.writeFileSync("hasEntered.txt", (message.author + "\n"), {flag: "a+"})
             //await gdrive.postHasEntered(message.author.id)  
         } else {
