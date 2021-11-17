@@ -3,7 +3,6 @@ const dotenv = require("dotenv")
 const fs = require("fs")
 const gdrive = require('./gdriveServer.js')
 const client = new Discord.Client()
-const axios = require('axios')
 
 dotenv.config()
 
@@ -14,7 +13,7 @@ client.once("ready", async () => {
     let text = fs.readFileSync("hasEntered.txt").toString('utf-8')
     let textByLine = text.split("\n")
     //const getEntrants = await gdrive.getHasEntered()
-    alreadyEntered.push(textByLine)
+    //alreadyEntered.push(textByLine)
     console.log(alreadyEntered)
 })
 
@@ -26,12 +25,8 @@ const start = async (message) => {
       //  return
     //} else {
         let randItem = await gdrive.getPrize()
-        if (message.author.name === "simapoika")  {
-            message.channel.send(`${message.author} mitä vittua? kukaaa?? hähh? ole hyvä: ${randItem} `)
-        }
         message.channel.send(`${message.author} palkintosi on: ${randItem}, toimitamme palkintosi yksityisviestillä.`)
         //fs.writeFileSync("winners.txt", (message.author.username + ": " + `${randItem}\n`), {flag: "a+"})
-        fs.writeFileSync("hasEntered.txt", (message.author) + "\n", {flag: "a+"})
         //let remove = text.replace(`${randItem}\n`, "")
         //fs.writeFileSync("prizes.txt", remove )
         await gdrive.postWinner(message.author.username, randItem)
